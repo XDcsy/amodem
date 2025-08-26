@@ -39,7 +39,7 @@ jobs:
 
   windows-build:
     runs-on: windows-latest
-    needs: build  # 等待测试任务完成后再构建
+    # 移除 needs: build，使两个任务完全独立
     
     steps:
     - uses: actions/checkout@v4
