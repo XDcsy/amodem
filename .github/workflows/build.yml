@@ -5,6 +5,8 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -34,3 +36,57 @@ jobs:
     - name: Test with pytest
       run: |
         pytest -v --cov=amodem
+
+  windows-build:
+    runs-on: windows-latest
+    needs: build  # 等待测试任务完成后再构建
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools numpy pyinstaller
+    
+    - name: Build executable
+      run: |
+        pyinstaller --name=amodem `
+                    --onefile `
+                    --console `
+                    --hidden-import=numpy.random.common `
+                    --hidden-import=numpy.random.bounded_integers `
+                    --hidden-import=numpy.random.entropy `
+                    --exclude-module=argcomplete `
+                    amodem/__main__.py
+    
+    - name: Create README
+      run: |
+        echo "Audio Modem (amodem) - Windows Executable`n" > dist/README.txt
+        echo "Usage:`n" >> dist/README.txt
+        echo "1. Download portaudio DLL (64-bit) from: http://www.portaudio.com/download.html`n" >> dist/README.txt
+        echo "2. Save the DLL file anywhere`n" >> dist/README.txt
+        echo "3. Run the program with DLL path, for example:`n" >> dist/README.txt
+        echo "   Send file:`n" >> dist/README.txt
+        echo "   amodem.exe send -i input.file -l path/to/portaudio.dll`n" >> dist/README.txt
+        echo "   Receive file:`n" >> dist/README.txt
+        echo "   amodem.exe recv -o output.file -l path/to/portaudio.dll`n" >> dist/README.txt
+        echo "   Calibrate:`n" >> dist/README.txt
+        echo "   amodem.exe recv --calibrate -l path/to/portaudio.dll`n" >> dist/README.txt
+        echo "For more options, run:`n" >> dist/README.txt
+        echo "amodem.exe --help" >> dist/README.txt
+    
+    - name: Create release package
+      run: |
+        Compress-Archive -Path dist/* -DestinationPath amodem-windows.zip
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: amodem-windows
+        path: amodem-windows.zip
