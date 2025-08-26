@@ -9,10 +9,17 @@ import zlib
 
 import pkg_resources
 
-from . import async_reader
-from . import audio
-from . import calib
-from . import main
+# 使用绝对导入
+try:
+    from . import async_reader
+    from . import audio
+    from . import calib
+    from . import main
+except ImportError:
+    import amodem.async_reader as async_reader
+    import amodem.audio as audio
+    import amodem.calib as calib
+    import amodem.main as main
 from .config import bitrates
 
 

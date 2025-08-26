@@ -54,6 +54,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install wheel setuptools numpy pyinstaller
     
+    - name: Install package
+      run: |
+        pip install -e .
+    
     - name: Build executable
       run: |
         pyinstaller --name=amodem `
@@ -63,6 +67,8 @@ jobs:
                     --hidden-import=numpy.random.bounded_integers `
                     --hidden-import=numpy.random.entropy `
                     --exclude-module=argcomplete `
+                    --add-data "amodem;amodem" `
+                    --collect-all amodem `
                     amodem/__main__.py
     
     - name: Create README
