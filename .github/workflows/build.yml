@@ -86,7 +86,9 @@ jobs:
         Compress-Archive -Path dist/* -DestinationPath amodem-windows.zip
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: amodem-windows
         path: amodem-windows.zip
+        compression-level: 9  # 使用最高压缩级别
+        retention-days: 30  # 保留30天
