@@ -58,18 +58,58 @@ jobs:
       run: |
         pip install -e .
     
+    - name: Create spec file
+      run: |
+        echo "# -*- mode: python -*-
+        block_cipher = None
+
+        a = Analysis(['amodem_launcher.py'],
+                    pathex=['.'],
+                    binaries=[],
+                    datas=[('amodem', 'amodem')],
+                    hiddenimports=[
+                        'numpy.random.common',
+                        'numpy.random.bounded_integers',
+                        'numpy.random.entropy',
+                        'amodem.async_reader',
+                        'amodem.audio',
+                        'amodem.calib',
+                        'amodem.main',
+                        'amodem.config',
+                        'amodem.dsp',
+                        'amodem.stream',
+                        'amodem.detect',
+                        'amodem.recv',
+                        'amodem.send'
+                    ],
+                    hookspath=[],
+                    runtime_hooks=[],
+                    excludes=['argcomplete'],
+                    win_no_prefer_redirects=False,
+                    win_private_assemblies=False,
+                    cipher=block_cipher,
+                    noarchive=False)
+
+        pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+        exe = EXE(pyz,
+                  a.scripts,
+                  a.binaries,
+                  a.zipfiles,
+                  a.datas,
+                  [],
+                  name='amodem',
+                  debug=False,
+                  bootloader_ignore_signals=False,
+                  strip=False,
+                  upx=True,
+                  upx_exclude=[],
+                  runtime_tmpdir=None,
+                  console=True)" > amodem.spec
+
     - name: Build executable
       run: |
-        pyinstaller --name=amodem `
-                    --onefile `
-                    --console `
-                    --hidden-import=numpy.random.common `
-                    --hidden-import=numpy.random.bounded_integers `
-                    --hidden-import=numpy.random.entropy `
-                    --exclude-module=argcomplete `
-                    --add-data "amodem;amodem" `
-                    --collect-all amodem `
-                    amodem/__main__.py
+        pyinstaller amodem.spec
     
     - name: Create README
       run: |
