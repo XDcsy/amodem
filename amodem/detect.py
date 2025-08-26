@@ -27,7 +27,7 @@ class Detector:
         self.omega = 2 * np.pi * self.freq / config.Fs
         self.Nsym = config.Nsym
         self.Tsym = config.Tsym
-        self.maxlen = config.baud  # 1 second of symbols
+        self.maxlen = self.CARRIER_DURATION + self.SEARCH_WINDOW
         self.max_offset = config.timeout * config.Fs
         self.plt = pylab
 

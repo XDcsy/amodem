@@ -17,16 +17,17 @@ class Equalizer:
         self.Nfreq = config.Nfreq
         self.Nsym = config.Nsym
 
-    def train_symbols(self, length, constant_prefix=16):
-        r = dsp.prbs(reg=1, poly=0x1100b, bits=2)
-        constellation = [1, 1j, -1, -1j]
+    def train_symbols(self, length, constant_prefix=32):
+        def zadoff_chu(length, u=1):
+            n = np.arange(length)
+            return np.exp(-1j * np.pi * u * n * (n + 1) / length)
 
         symbols = []
-        for _ in range(length):
-            symbols.append([constellation[next(r)] for _ in range(self.Nfreq)])
-
-        symbols = np.array(symbols)
-        # Constant symbols (for analog debugging)
+        for i in range(self.Nfreq):
+            zc = zadoff_chu(length, u=i+1)
+            symbols.append(zc)
+        
+        symbols = np.array(symbols).T
         symbols[:constant_prefix, :] = 1
         return symbols
 
@@ -46,7 +47,7 @@ class Equalizer:
         return np.array(list(itertools.islice(symbols, size)))
 
 
-equalizer_length = 200
+equalizer_length = 2000
 silence_length = 50
 prefix = [1]*equalizer_length + [0]*silence_length
 
