@@ -18,15 +18,15 @@ class Equalizer:
         self.Nsym = config.Nsym
 
     def train_symbols(self, length, constant_prefix=32):
-        # 使用简单的二进制训练序列 (+1/-1)
-        r = dsp.prbs(reg=1, poly=0x1100b, bits=2)  # 使用伪随机二进制序列
-        constellation = [1, -1]  # BPSK调制
+        r = dsp.prbs(reg=1, poly=0x1100b, bits=2)
+        constellation = [1, 1j, -1, -1j]  # QPSK constellation
         symbols = []
         for _ in range(length):
-            symbols.append([constellation[next(r) & 1] for _ in range(self.Nfreq)])
-        
+            symbols.append([constellation[next(r)] for _ in range(self.Nfreq)])
+
         symbols = np.array(symbols)
-        symbols[:constant_prefix, :] = 1  # 常数前缀用于初始同步
+        # Constant prefix (for initial synchronization)
+        symbols[:constant_prefix, :] = 1
         return symbols
 
     def modulator(self, symbols):
