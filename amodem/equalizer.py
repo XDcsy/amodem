@@ -18,17 +18,15 @@ class Equalizer:
         self.Nsym = config.Nsym
 
     def train_symbols(self, length, constant_prefix=32):
-        def zadoff_chu(length, u=1):
-            n = np.arange(length)
-            return np.exp(-1j * np.pi * u * n * (n + 1) / length)
-
+        # 使用简单的二进制训练序列 (+1/-1)
+        r = dsp.prbs(reg=1, poly=0x1100b, bits=2)  # 使用伪随机二进制序列
+        constellation = [1, -1]  # BPSK调制
         symbols = []
-        for i in range(self.Nfreq):
-            zc = zadoff_chu(length, u=i+1)
-            symbols.append(zc)
+        for _ in range(length):
+            symbols.append([constellation[next(r) & 1] for _ in range(self.Nfreq)])
         
-        symbols = np.array(symbols).T
-        symbols[:constant_prefix, :] = 1
+        symbols = np.array(symbols)
+        symbols[:constant_prefix, :] = 1  # 常数前缀用于初始同步
         return symbols
 
     def modulator(self, symbols):
